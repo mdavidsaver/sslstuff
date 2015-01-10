@@ -1,5 +1,7 @@
 *~
+*project
 *.key
 *.req
 *.pem
 *.p12
+*.ser

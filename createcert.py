@@ -19,12 +19,12 @@ def args():
                    help='Key size in bits (def. 4096)')
     P.add_argument('--expire', metavar='days', type=int, default=365,
                    help="CA key will expire after some time")
-    P.add_argument('--serial', metavar='N', type=long, default=1,
+    P.add_argument('--serial', metavar='N', type=long,
                    help="Certificate serial number")
     P.add_argument('--comment', metavar='str',
                    help="Certificate Comment")
-    P.add_argument('--alt', metavar='str',
-                   help="Alt. subject name (server aliases or client email)")
+    P.add_argument('--alt', metavar='str', action='append',
+                   help="Alt. subject name (eg. email:my@addr, IP:1.2.3.4 or DNS:foo.com)")
     P.add_argument('--sign', metavar='algo', default='sha1',
                    help="Signing algorithm, defaults to SHA1")
 
@@ -35,13 +35,27 @@ def args():
 
     return P.parse_args()
 
+def getpw(X):
+    import getpass
+    pw1 = None
+    while not pw1:
+        pw1 = getpass.getpass('password> ')
+    return pw1
+
 def main(args):
     assert args.cabasename!=args.basename, "You probably don't intend to overwrite the cacert"
 
     with open(args.cabasename+'.key', 'rb') as F:
-        cakey = crypto.load_privatekey(crypto.FILETYPE_PEM, F.read())
+        cakey = crypto.load_privatekey(crypto.FILETYPE_PEM, F.read(), getpw)
+
     with open(args.cabasename+'.pem', 'rb') as F:
         cacert= crypto.load_certificate(crypto.FILETYPE_PEM, F.read())
+
+    if not args.serial:
+        with open(args.cabasename+'.ser', 'r+') as F:
+            for L in F:
+                args.serial = long(L.split('|',1)[0].strip())
+        args.serial += 1
 
     key = crypto.PKey()
     key.generate_key(crypto.TYPE_RSA, args.bits)
@@ -93,7 +107,7 @@ def main(args):
 
     if args.alt:
         cert.add_extensions([
-            crypto.X509Extension('subjectAltName', False, args.alt),
+            crypto.X509Extension('subjectAltName', False, ','.join(args.alt)),
         ])
 
     if args.comment:
@@ -102,6 +116,9 @@ def main(args):
         ])
 
     cert.sign(cakey, args.sign)
+
+    with open(args.cabasename+'.ser', 'a') as F: # append to serial numbers file
+        F.write('%d|%s\n'%(args.serial, ' '.join(sys.argv[1:])))
 
     with open(args.basename+'.pem', 'wb') as F:
         F.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))

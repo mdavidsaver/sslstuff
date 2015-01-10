@@ -6,7 +6,7 @@ inspect the resulting cert with
   openssl x509 -text -in <myname>.pem
 """
 
-import argparse
+import argparse, sys
 
 from OpenSSL import crypto
 
@@ -24,8 +24,21 @@ def args():
                    help="Certificate Comment")
     P.add_argument('--sign', metavar='algo', default='sha1',
                    help="Signing algorithm, defaults to SHA1")
+    P.add_argument('--nopw', action='store_true',
+                   help="Don't encrypt CA private key file (use with caution)")
 
     return P.parse_args()
+
+def setpw(X):
+    import getpass
+    pw1, pw2 = None, 'invalid'
+
+    while not pw1 or pw1!=pw2:
+        pw1 = getpass.getpass('password> ')
+        pw2 = getpass.getpass('again> ')
+
+    assert pw1==pw2
+    return pw1
 
 def main(args):
     assert args.basename and args.DN
@@ -76,7 +89,13 @@ def main(args):
         F.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
 
     with open(args.basename+'.key', 'wb') as F:
-        F.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
+        if args.nopw:
+            F.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
+        else:
+            F.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key, 'AES128', setpw))
+
+    with open(args.basename+'.ser', 'w') as F: # start a new serial numbers file
+        F.write('%d|%s\n'%(args.serial, ' '.join(sys.argv[1:])))
 
 if __name__=='__main__':
     main(args())

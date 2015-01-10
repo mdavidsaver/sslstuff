@@ -6,11 +6,10 @@ SSL related things I occsionally need to remember.
 Certificate creation with pyOpenSSL.
 
 Generating a server and client cert for testing purposes.
-Unique serial numbers are important as some web browsers (firefox) treat duplicate S/N with a hard fail.
 
-    ./createca.py --bits 1024 --serial 1 --expire 30 fooca "CN=My CA,O=Me"
-    ./createcert.py --bits 1024 --serial 2 --expire 30 --server fooca theserver "CN=localhost"
-    ./createcert.py --bits 1024 --serial 3 --expire 30 --client fooca client1 "CN=myusername"
+    ./createca.py --bits 10241 --expire 30 fooca "CN=My CA,O=Me"
+    ./createcert.py --bits 1024 --expire 30 --server fooca theserver "CN=localhost"
+    ./createcert.py --bits 1024 --expire 30 --client fooca client1 "CN=myusername"
 
 Building a PKCS12 file
 
