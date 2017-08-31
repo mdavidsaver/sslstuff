@@ -7,7 +7,7 @@ Certificate creation with pyOpenSSL.
 
 Generating a server and client cert for testing purposes.
 
-    ./createca.py --bits 10241 --expire 30 fooca "CN=My CA,O=Me"
+    ./createca.py --bits 1024 --expire 30 fooca "CN=My CA,O=Me"
     ./createcert.py --bits 1024 --expire 30 --server fooca theserver "CN=localhost"
     ./createcert.py --bits 1024 --expire 30 --client fooca client1 "CN=myusername"
 
