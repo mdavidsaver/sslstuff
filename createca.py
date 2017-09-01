@@ -17,9 +17,9 @@ def args():
     P.add_argument('--bits', metavar='N', type=int, default=4096,
                    help='Key size in bits (def. 4096)')
     P.add_argument('--expire', metavar='days', type=int, default=365,
-                   help="CA key will expire after some time")
+                   help="CA key will expire after some time (def. 1 year)")
     P.add_argument('--serial', metavar='N', type=long, default=1,
-                   help="Certificate serial number")
+                   help="Certificate serial number (def. 1)")
     P.add_argument('--comment', metavar='str',
                    help="Certificate Comment")
     P.add_argument('--sign', metavar='algo', default='sha1',
@@ -63,7 +63,7 @@ def main(args):
         setattr(subj, K.strip(), V.strip())
     print 'DN',subj.get_components()
 
-    cert.set_issuer(subj) # CA issuse to self
+    cert.set_issuer(subj) # CA issue to self
 
     cert.gmtime_adj_notBefore(0)
     cert.gmtime_adj_notAfter(args.expire*86400)
