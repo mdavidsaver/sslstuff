@@ -1,0 +1,6 @@
+Add --verb N when troubleshooting
+
+
+With PAM.  replace USERNAME with COMMONNAME to
+force match of user cert w/ account.
+still prompts for username.
