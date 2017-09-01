@@ -1,0 +1,15 @@
+sudo: false
+dist: trusty
+language: python
+python:
+ - "2.7"
+env:
+ - PROF=deb9
+addons:
+  apt:
+    packages:
+    - openssl
+install:
+  - pip install -r requirements-${PROF}.txt
+script:
+  - ./test.sh
