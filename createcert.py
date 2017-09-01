@@ -99,6 +99,7 @@ def main(args):
     elif args.action=='server':
         cert.add_extensions([
             crypto.X509Extension('nsCertType', False, 'server'),
+            crypto.X509Extension('keyUsage', False, 'digitalSignature, keyEncipherment'),
             crypto.X509Extension('extendedKeyUsage', False, 'serverAuth'),
         ])
 

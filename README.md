@@ -15,6 +15,10 @@ Building a PKCS12 file
 
     ./makepkcs12.py client1.pem client1.key --cacertfile fooca.pem fooclient.p12
 
+Print
+
+    openssl x509 -in theserver.pem -text
+
 To test
 
     openssl s_server -Verify 1 -cert theserver.pem -key theserver.key -CAfile fooca.pem
