@@ -71,8 +71,12 @@ def main(args):
 
         crl.add_revoked(rev)
 
+    try:
+        crlblob = crl.export(cacert, cakey, crypto.FILETYPE_PEM, args.expire, args.sign)
+    except TypeError:
+        crlblob = crl.export(cacert, cakey, crypto.FILETYPE_PEM, args.expire)
     with open(args.cabasename+'.crl', 'wb') as F:
-        F.write(crl.export(cacert, cakey, crypto.FILETYPE_PEM, args.expire, args.sign))
+        F.write(crlblob)
 
 if __name__=='__main__':
     main(args())

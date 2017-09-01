@@ -96,8 +96,13 @@ def main(args):
 
     # empty CRL
     crl = crypto.CRL()
+    try:
+        crlblob = crl.export(cert, key, crypto.FILETYPE_PEM, args.expire, args.sign)
+    except TypeError:
+        # older pyOpenSSL
+        crlblob = crl.export(cert, key, crypto.FILETYPE_PEM, args.expire)
     with open(args.basename+'.crl', 'wb') as F:
-        F.write(crl.export(cert, key, crypto.FILETYPE_PEM, args.expire, args.sign))
+        F.write(crlblob)
 
     with open(args.basename+'.ser', 'w') as F: # start a new serial numbers file
         F.write('%d|%s\n'%(args.serial, ' '.join(sys.argv[1:])))
