@@ -26,3 +26,9 @@ To test
 And in another terminal
 
     openssl s_client -connect localhost:4433 -verify 1 -cert client1.pem -key client1.key -CAfile fooca.pem
+
+Decisions
+---------
+
+- Keys are RSA with selectable length and digest algorithm
+- Only one CA allowed, no secondary CAs

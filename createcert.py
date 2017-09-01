@@ -18,15 +18,15 @@ def args():
     P.add_argument('--bits', metavar='N', type=int, default=4096,
                    help='Key size in bits (def. 4096)')
     P.add_argument('--expire', metavar='days', type=int, default=365,
-                   help="CA key will expire after some time")
+                   help="CA key will expire after some time (def. 365 days)")
     P.add_argument('--serial', metavar='N', type=long,
-                   help="Certificate serial number")
+                   help="Certificate serial number (def. auto)")
     P.add_argument('--comment', metavar='str',
                    help="Certificate Comment")
     P.add_argument('--alt', metavar='str', action='append',
                    help="Alt. subject name (eg. email:my@addr, IP:1.2.3.4 or DNS:foo.com)")
-    P.add_argument('--sign', metavar='algo', default='sha1',
-                   help="Signing algorithm, defaults to SHA1")
+    P.add_argument('--sign', metavar='algo', default='sha256',
+                   help="Signing algorithm, defaults to SHA-256")
 
     P.add_argument('--server', action='store_const', const='server', dest='action', default='client',
                    help="Generate a SSL server certificate")

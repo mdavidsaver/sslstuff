@@ -17,13 +17,13 @@ def args():
     P.add_argument('--bits', metavar='N', type=int, default=4096,
                    help='Key size in bits (def. 4096)')
     P.add_argument('--expire', metavar='days', type=int, default=365,
-                   help="CA key will expire after some time (def. 1 year)")
+                   help="CA key will expire after some time (def. 365 days)")
     P.add_argument('--serial', metavar='N', type=long, default=1,
                    help="Certificate serial number (def. 1)")
     P.add_argument('--comment', metavar='str',
                    help="Certificate Comment")
-    P.add_argument('--sign', metavar='algo', default='sha1',
-                   help="Signing algorithm, defaults to SHA1")
+    P.add_argument('--sign', metavar='algo', default='sha256',
+                   help="Signing algorithm, defaults to SHA-256")
     P.add_argument('--nopw', action='store_true',
                    help="Don't encrypt CA private key file (use with caution)")
 
@@ -93,6 +93,11 @@ def main(args):
             F.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
         else:
             F.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key, 'AES128', setpw))
+
+    # empty CRL
+    crl = crypto.CRL()
+    with open(args.basename+'.crl', 'wb') as F:
+        F.write(crl.export(cert, key, crypto.FILETYPE_PEM, args.expire, args.sign))
 
     with open(args.basename+'.ser', 'w') as F: # start a new serial numbers file
         F.write('%d|%s\n'%(args.serial, ' '.join(sys.argv[1:])))
