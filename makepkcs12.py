@@ -40,7 +40,7 @@ def main(args):
     pw = pw2 = None
     if args.pw:
         from getpass import getpass
-        while not pw or not pw2 and pw!=pw2:
+        while (not pw or not pw2) and pw!=pw2:
             pw = getpass('New Password:')
             pw2= getpass('Again:')
 

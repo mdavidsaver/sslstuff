@@ -11,7 +11,7 @@ import argparse, sys
 from OpenSSL import crypto
 
 def args():
-    P = argparse.ArgumentParser(description='Generate a minimal CA key and certificate')
+    P = argparse.ArgumentParser(description='Re-generate CRL file, optionally adding a new revokation')
     P.add_argument('cabasename', help='Base name for CA .key and .pem files')
     P.add_argument('--revoke', metavar='cert',
                    help="Certificate file (PEM) to revoke")
