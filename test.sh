@@ -57,6 +57,25 @@ python "$BASE/makepkcs12.py" --cacertfile theca.pem myself.pem myself.key myself
 
 openssl pkcs12 -in myself.p12 -passin pass: -nokeys -nodes -chain -info
 
+msg "Translate to Java keystore"
+# a la. glassfish
+
+keytool -noprompt -importcert \
+-alias theca -file theca.pem \
+-keystore cacerts.jks -storepass 'changeit'
+
+keytool -list \
+-keystore cacerts.jks -storepass 'changeit'
+
+python "$BASE/makepkcs12.py" server1.pem server1.key server1.p12
+
+keytool -noprompt -importkeystore \
+-srcstoretype PKCS12 -srckeystore server1.p12 --srcstorepass '' \
+-destkeystore keystore.jks -deststorepass 'changeit'
+
+keytool -list \
+-keystore keystore.jks -storepass 'changeit'
+
 msg "Revoke Server"
 
 python "$BASE/crl.py" --revoke server1.pem theca
