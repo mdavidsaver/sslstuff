@@ -55,7 +55,7 @@ def main(args):
     cert.gmtime_adj_notBefore(0)
     cert.gmtime_adj_notAfter(args.expire*86400)
 
-    # See openssl.cnf for extension names and values
+    # See "man x509v3_config" and https://tools.ietf.org/html/rfc5280
     cert.add_extensions([
         crypto.X509Extension('subjectKeyIdentifier', False, "hash", subject=cert),
     ])

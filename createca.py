@@ -26,6 +26,10 @@ def args():
                    help="Signing algorithm, defaults to SHA-256")
     P.add_argument('--nopw', action='store_true',
                    help="Don't encrypt CA private key file (use with caution)")
+    P.add_argument('--permit', metavar='str', action='append', default=[],
+                   help="Name(s) for which this CA may issue certs. (See 'Name Constraints' in \"man x509v3_config\")")
+    P.add_argument('--exclude', metavar='str', action='append', default=[],
+                   help="Name(s) for which this CA may not issue certs. (See 'Name Constraints' in \"man x509v3_config\")")
 
     return P.parse_args()
 
@@ -68,16 +72,22 @@ def main(args):
     cert.gmtime_adj_notBefore(0)
     cert.gmtime_adj_notAfter(args.expire*86400)
 
-    # See openssl.cnf for extension names and values
+    # See "man x509v3_config" and https://tools.ietf.org/html/rfc5280
     cert.add_extensions([
         crypto.X509Extension('subjectKeyIdentifier', False, "hash", subject=cert),
         crypto.X509Extension('basicConstraints', True, "CA:TRUE"), # no pathlen
         crypto.X509Extension('nsCertType', False, 'sslCA'),
         crypto.X509Extension('keyUsage', True, 'cRLSign, keyCertSign'),
     ])
+    # a CA certs is its own issuer
     cert.add_extensions([
         crypto.X509Extension('authorityKeyIdentifier', False, "keyid:always,issuer:always", issuer=cert),
     ])
+    if args.permit or args.exclude:
+        constraints = ['excluded;'+C for C in args.exclude] + ['permitted;'+C for C in args.permit]
+        cert.add_extensions([
+            crypto.X509Extension('nameConstraints', False, ','.join(constraints)),
+        ])
     if args.comment:
         cert.add_extensions([
             crypto.X509Extension('nsComment', False, args.comment),

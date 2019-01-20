@@ -28,7 +28,9 @@ openssl x509 -in self.pem -text
 
 msg "Create CA"
 
-python "$BASE/createca.py" --bits 1024 --expire 1 --nopw theca "CN=The CA"
+python "$BASE/createca.py" --bits 1024 --expire 1 \
+ --permit 'DNS:.example' --permit 'email:example' --permit 'IP:1.1.1.0/255.255.255.0' \
+ --nopw theca "CN=The CA"
 
 openssl x509 -in theca.pem -text
 
@@ -36,20 +38,42 @@ openssl crl -in theca.crl -CAfile theca.pem -verify -text
 
 msg "Create Server"
 
-python "$BASE/createcert.py" --bits 1024 --expire 1 --server theca server1 "CN=server1.a" --alt "IP:1.1.1.1" --alt "DNS:server1.b"
+python "$BASE/createcert.py" --bits 1024 --expire 1 --server theca server1 "CN=server.example" --alt "DNS:server.example" --alt "IP:1.1.1.1"
 
 openssl x509 -in server1.pem -text
 
-openssl verify -x509_strict -CAfile theca.pem -CRLfile theca.crl -crl_check_all -purpose nssslserver -purpose sslserver server1.pem
+# verify correct hostname and IP
+openssl verify -x509_strict -CAfile theca.pem -CRLfile theca.crl -crl_check_all \
+-verify_hostname server.example -verify_ip 1.1.1.1 \
+-purpose nssslserver -purpose sslserver server1.pem
+
+# correct hostname, wrong IP
+openssl verify -x509_strict -CAfile theca.pem -CRLfile theca.crl -crl_check_all \
+-verify_hostname server.example -verify_ip 1.1.2.1 \
+-purpose nssslserver -purpose sslserver server1.pem \
+&& die "Unexpected verify success"
+
+# wrong hostname and IP
+openssl verify -x509_strict -CAfile theca.pem -CRLfile theca.crl -crl_check_all \
+-verify_hostname server.other -verify_ip 1.1.2.1 \
+-purpose nssslserver -purpose sslserver server1.pem \
+&& die "Unexpected verify success"
 
 msg "Create Client"
 
-python "$BASE/createcert.py" --bits 1024 --expire 1 --client theca myself "CN=$USER" --alt "email:travis.localhost"
+python "$BASE/createcert.py" --bits 1024 --expire 1 --client theca myself "CN=$USER" --alt "email:$USER@example"
 
 openssl x509 -in myself.pem -text
 
-openssl verify -x509_strict -CAfile theca.pem -CRLfile theca.crl -crl_check_all -purpose sslclient myself.pem
+openssl verify -x509_strict -CAfile theca.pem -CRLfile theca.crl -crl_check_all \
+-verify_email "$USER@example" \
+-purpose sslclient myself.pem
 # TODO   -purpose smimesign -purpose smimeencrypt
+
+openssl verify -x509_strict -CAfile theca.pem -CRLfile theca.crl -crl_check_all \
+-verify_email "$USER@other" \
+-purpose sslclient myself.pem \
+&& die "Unexpected verify success"
 
 msg "Package client as pkcs12"
 

@@ -62,11 +62,12 @@ def main(args):
 
     cert = crypto.X509()
 
-    cert.set_version(2)
+    cert.set_version(2) # aka. version 3
     cert.set_serial_number(args.serial)
 
     subj = cert.get_subject()
 
+    # CN= O= OU= C= etc...
     for blob in map(str.strip, args.DN.split(',')):
         K,_,V = blob.partition('=')
         if not V.strip():
@@ -75,13 +76,16 @@ def main(args):
         setattr(subj, K.strip(), V.strip())
     print 'DN',subj.get_components()
 
+    # takes DN
     cert.set_issuer(cacert.get_subject())
 
     cert.set_pubkey(key)
 
+    # relative times
     cert.gmtime_adj_notBefore(0)
     cert.gmtime_adj_notAfter(args.expire*86400)
 
+    # See "man x509v3_config" and https://tools.ietf.org/html/rfc5280
     cert.add_extensions([
         crypto.X509Extension('basicConstraints', True, "CA:FALSE"),
         crypto.X509Extension('authorityKeyIdentifier', False, "keyid:always,issuer:always", issuer=cacert),
