@@ -9,7 +9,7 @@ addons:
   apt:
     packages:
     - openssl
-    - default-jdk-headless
+    - openjdk-8-jdk-headless
 install:
   - pip install -r requirements-${PROF}.txt
 script:
