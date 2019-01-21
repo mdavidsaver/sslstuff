@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e -x
 
+openssl version
+
 die() {
   echo "$1"
   exit 1
@@ -28,8 +30,10 @@ openssl x509 -in self.pem -text
 
 msg "Create CA"
 
+# older openssl doesn't support IP name constraints
+# --permit 'IP:1.1.1.0/255.255.255.0'
 python "$BASE/createca.py" --bits 1024 --expire 1 \
- --permit 'DNS:.example' --permit 'email:example' --permit 'IP:1.1.1.0/255.255.255.0' \
+ --permit 'DNS:.example' --permit 'email:example' \
  --nopw theca "CN=The CA"
 
 openssl x509 -in theca.pem -text
@@ -44,7 +48,7 @@ openssl x509 -in server1.pem -text
 
 # verify correct hostname and IP
 openssl verify -x509_strict -CAfile theca.pem -CRLfile theca.crl -crl_check_all \
--verify_hostname server.example -verify_ip 1.1.1.1 \
+-verify_hostname server.example \
 -purpose nssslserver -purpose sslserver server1.pem
 
 # correct hostname, wrong IP
