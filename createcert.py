@@ -6,6 +6,8 @@ inspect the resulting cert with
   openssl x509 -text -in <myname>.pem
 """
 
+from __future__ import print_function
+
 import argparse, sys
 
 from OpenSSL import crypto
@@ -19,7 +21,7 @@ def args():
                    help='Key size in bits (def. 4096)')
     P.add_argument('--expire', metavar='days', type=int, default=365,
                    help="CA key will expire after some time (def. 365 days)")
-    P.add_argument('--serial', metavar='N', type=long,
+    P.add_argument('--serial', metavar='N', type=int,
                    help="Certificate serial number (def. auto)")
     P.add_argument('--comment', metavar='str',
                    help="Certificate Comment")
@@ -54,7 +56,7 @@ def main(args):
     if not args.serial:
         with open(args.cabasename+'.ser', 'r+') as F:
             for L in F:
-                args.serial = long(L.split('|',1)[0].strip())
+                args.serial = int(L.split('|',1)[0].strip())
         args.serial += 1
 
     key = crypto.PKey()
@@ -71,10 +73,10 @@ def main(args):
     for blob in map(str.strip, args.DN.split(',')):
         K,_,V = blob.partition('=')
         if not V.strip():
-            print 'Invalid DN component',blob
+            print('Invalid DN component',blob)
             sys.exit(1)
         setattr(subj, K.strip(), V.strip())
-    print 'DN',subj.get_components()
+    print('DN',subj.get_components())
 
     # takes DN
     cert.set_issuer(cacert.get_subject())
@@ -87,24 +89,24 @@ def main(args):
 
     # See "man x509v3_config" and https://tools.ietf.org/html/rfc5280
     cert.add_extensions([
-        crypto.X509Extension('basicConstraints', True, "CA:FALSE"),
-        crypto.X509Extension('authorityKeyIdentifier', False, "keyid:always,issuer:always", issuer=cacert),
-        crypto.X509Extension('subjectKeyIdentifier', False, "hash", subject=cert),
-        #crypto.X509Extension('issuerAltName', False, "issuer:copy", issuer=cacert),
-        #crypto.X509Extension('subjectAltName', False, "email:copy"),
+        crypto.X509Extension(b'basicConstraints', True, b"CA:FALSE"),
+        crypto.X509Extension(b'authorityKeyIdentifier', False, b"keyid:always,issuer:always", issuer=cacert),
+        crypto.X509Extension(b'subjectKeyIdentifier', False, b"hash", subject=cert),
+        #crypto.X509Extension(b'issuerAltName', False, b"issuer:copy", issuer=cacert),
+        #crypto.X509Extension(b'subjectAltName', False, b"email:copy"),
     ])
     if args.action=='client':
         cert.add_extensions([
-            crypto.X509Extension('nsCertType', False, 'client, email, objsign'),
-            crypto.X509Extension('keyUsage', False, 'digitalSignature, keyEncipherment'),
-            crypto.X509Extension('extendedKeyUsage', False, 'clientAuth'),
+            crypto.X509Extension(b'nsCertType', False, b'client, email, objsign'),
+            crypto.X509Extension(b'keyUsage', False, b'digitalSignature, keyEncipherment'),
+            crypto.X509Extension(b'extendedKeyUsage', False, b'clientAuth'),
         ])
 
     elif args.action=='server':
         cert.add_extensions([
-            crypto.X509Extension('nsCertType', False, 'server'),
-            crypto.X509Extension('keyUsage', False, 'digitalSignature, keyEncipherment'),
-            crypto.X509Extension('extendedKeyUsage', False, 'serverAuth'),
+            crypto.X509Extension(b'nsCertType', False, b'server'),
+            crypto.X509Extension(b'keyUsage', False, b'digitalSignature, keyEncipherment'),
+            crypto.X509Extension(b'extendedKeyUsage', False, b'serverAuth'),
         ])
 
     else:
@@ -112,12 +114,12 @@ def main(args):
 
     if args.alt:
         cert.add_extensions([
-            crypto.X509Extension('subjectAltName', False, ','.join(args.alt)),
+            crypto.X509Extension(b'subjectAltName', False, (','.join(args.alt)).encode()),
         ])
 
     if args.comment:
         cert.add_extensions([
-            crypto.X509Extension('nsComment', False, args.comment),
+            crypto.X509Extension(b'nsComment', False, args.comment.encode()),
         ])
 
     cert.sign(cakey, args.sign)

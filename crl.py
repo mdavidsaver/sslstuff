@@ -6,6 +6,8 @@ verify with
   openssl crl -in myca.crl -CAfile myca.pem -verify -text
 """
 
+from __future__ import print_function
+
 import argparse, sys
 
 from OpenSSL import crypto
@@ -36,7 +38,7 @@ def getpw(X):
 def main(args):
     if args.list_reasons:
         for reason in crypto.Revoked().all_reasons():
-            print reason
+            print(reason)
         return
 
     with open(args.cabasename+'.key', 'rb') as F:
@@ -49,30 +51,30 @@ def main(args):
         crl = crypto.load_crl(crypto.FILETYPE_PEM, F.read())
 
     for rev in crl.get_revoked() or []:
-        print 'rev', rev
+        print('rev', rev)
 
     if args.revoke:
         with open(args.revoke, 'rb') as F:
             cert= crypto.load_certificate(crypto.FILETYPE_PEM, F.read())
 
-        print 'S/N %x'%cert.get_serial_number()
+        print('S/N %x'%cert.get_serial_number())
         rev = crypto.Revoked()
-        rev.set_serial('%x'%cert.get_serial_number())
+        rev.set_serial(b'%x'%cert.get_serial_number())
 
         # hack to get current date in ASN1
         junk = crypto.X509()
         junk.gmtime_adj_notBefore(0)
         rev.set_rev_date(junk.get_notBefore())
 
-        rev.set_reason(args.reason)
+        rev.set_reason(args.reason.encode())
 
-        print 'S/N', rev.get_serial()
-        print 'when', rev.get_rev_date()
+        print('S/N', rev.get_serial())
+        print('when', rev.get_rev_date())
 
         crl.add_revoked(rev)
 
     try:
-        crlblob = crl.export(cacert, cakey, crypto.FILETYPE_PEM, args.expire, args.sign)
+        crlblob = crl.export(cacert, cakey, crypto.FILETYPE_PEM, args.expire, args.sign.encode())
     except TypeError:
         crlblob = crl.export(cacert, cakey, crypto.FILETYPE_PEM, args.expire)
     with open(args.cabasename+'.crl', 'wb') as F:

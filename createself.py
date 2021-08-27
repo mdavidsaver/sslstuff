@@ -6,6 +6,8 @@ inspect the resulting cert with
   openssl x509 -text -in <myname>.pem
 """
 
+from __future__ import print_function
+
 import argparse
 
 from OpenSSL import crypto
@@ -18,7 +20,7 @@ def args():
                    help='Key size in bits (def. 4096)')
     P.add_argument('--expire', metavar='days', type=int, default=365,
                    help="CA key will expire after some time (def. 365 days)")
-    P.add_argument('--serial', metavar='N', type=long, default=1,
+    P.add_argument('--serial', metavar='N', type=int, default=1,
                    help="Certificate serial number (def. 1)")
     P.add_argument('--comment', metavar='str',
                    help="Certificate Comment")
@@ -45,10 +47,10 @@ def main(args):
     for blob in map(str.strip, args.DN.split(',')):
         K,_,V = blob.partition('=')
         if not V.strip():
-            print 'Invalid DN component',blob
+            print('Invalid DN component',blob)
             sys.exit(1)
         setattr(subj, K.strip(), V.strip())
-    print 'DN',subj.get_components()
+    print('DN',subj.get_components())
 
     cert.set_issuer(subj) # CA issuse to self
 
@@ -57,14 +59,14 @@ def main(args):
 
     # See "man x509v3_config" and https://tools.ietf.org/html/rfc5280
     cert.add_extensions([
-        crypto.X509Extension('subjectKeyIdentifier', False, "hash", subject=cert),
+        crypto.X509Extension(b'subjectKeyIdentifier', False, b"hash", subject=cert),
     ])
     cert.add_extensions([
-        crypto.X509Extension('authorityKeyIdentifier', False, "keyid:always,issuer:always", issuer=cert),
+        crypto.X509Extension(b'authorityKeyIdentifier', False, b"keyid:always,issuer:always", issuer=cert),
     ])
     if args.comment:
         cert.add_extensions([
-            crypto.X509Extension('nsComment', False, args.comment),
+            crypto.X509Extension(b'nsComment', False, args.comment.encode()),
         ])
 
     cert.sign(key, args.sign)

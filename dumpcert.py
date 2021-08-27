@@ -4,6 +4,8 @@
   openssl x509 -text -in <myname>.pem
 """
 
+from __future__ import print_function
+
 from OpenSSL import crypto
 from pyasn1.codec.ber import decoder
 
@@ -28,20 +30,20 @@ with open(FN,'rb') as F:
 
 C = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
 
-print 'Version',C.get_version()
-print 'SN',hex(C.get_serial_number())
-print 'Sig algo',C.get_signature_algorithm()
-print 'Issuer',C.get_issuer().get_components()
-print 'Subject',C.get_subject().get_components()
-print 'Validity from:', time.ctime(DT2sec(C.get_notBefore()))
-print '           to:', time.ctime(DT2sec(C.get_notAfter()))
-print 'Key size', C.get_pubkey().bits()
+print('Version',C.get_version())
+print('SN',hex(C.get_serial_number()))
+print('Sig algo',C.get_signature_algorithm())
+print('Issuer',C.get_issuer().get_components())
+print('Subject',C.get_subject().get_components())
+print('Validity from:', time.ctime(DT2sec(C.get_notBefore())))
+print('           to:', time.ctime(DT2sec(C.get_notAfter())))
+print('Key size', C.get_pubkey().bits())
 for i in range(C.get_extension_count()):
   E = C.get_extension(i)
-  print ' ',E.get_short_name(),(' crit' if E.get_critical() else '')
+  print(' ',E.get_short_name(),(' crit' if E.get_critical() else ''))
   try:
-    print '    ',decoder.decode(E.get_data()),
+    print('    ',decoder.decode(E.get_data()))
   except:
-    print '    No Decode ',
+    print('    No Decode ')
   finally:
-    print repr(E.get_data())
+    print(repr(E.get_data()))
