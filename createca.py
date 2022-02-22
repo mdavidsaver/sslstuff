@@ -63,6 +63,9 @@ def main(args):
 
     for blob in map(str.strip, args.DN.split(',')):
         K,_,V = blob.partition('=')
+        if K!=K.upper():
+            print("DN components must be upper case")
+            sys.exit(1)
         if not V.strip():
             print('Invalid DN component',blob)
             sys.exit(1)
