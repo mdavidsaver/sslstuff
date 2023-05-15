@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """(re)generate a Certificate Revokation list (CRL)
 
 verify with

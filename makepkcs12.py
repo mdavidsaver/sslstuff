@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Construct a PKCS12 file from its consitituent parts
 
 Verify with

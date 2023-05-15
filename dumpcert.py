@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Simple approximation of
 
   openssl x509 -text -in <myname>.pem
@@ -19,7 +19,7 @@ _dt = Struct('!4s2s2s2s2s2sc')
 
 def DT2sec(s):
   parts = _dt.unpack(s)
-  assert parts[-1] in ['Z','z']
+  assert parts[-1] in [b'Z',b'z'], parts
   TT = tuple(map(int,parts[:6]))+(0,0,-1)
   return timegm(TT)
 

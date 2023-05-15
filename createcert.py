@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Issue a certificate from a request
 
 inspect the resulting cert with
